@@ -21,7 +21,7 @@ variable "aws_region" {
 #    description = "Billing code for resource tagging"
 #}
 
-variable "python_runtime_target" {
+variable "python_runtime" {
   type        = string
   description = "Python runtime to use for lambda functions"
   default     = "python3.11"
@@ -33,9 +33,15 @@ variable "lambda_timeout" {
   default     = 300
 }
 
-variable "lambda_authorization_header" {
+variable "initiative_reporting_authorization_header" {
   type        = string
-  description = "Authorization header to pass to lambda functions"
+  description = "Authorization header for initative-reporting lambda function"
+  sensitive   = true
+}
+
+variable "architecture_reporting_authorization_header" {
+  type        = string
+  description = "Authorization header for architecture-reporting lambda function"
   sensitive   = true
 }
 
@@ -49,33 +55,21 @@ variable "confluence_email" {
   description = "Basic auth username for Confluence API requests"
 }
 
-variable "confluence_token" {
+variable "initiative_reporting_confluence_token" {
   type        = string
-  description = "Basic auth password for Confluence API requests"
+  description = "Basic auth password for Confluence API requests for initiative-reporting"
+  sensitive   = true
+}
+
+variable "architecture_reporting_confluence_token" {
+  type        = string
+  description = "Basic auth password for Confluence API requests for architecture-reporting"
   sensitive   = true
 }
 
 variable "confluence_space_id" {
   type        = string
   description = "Confluence space ID to search for pages"
-}
-
-variable "confluence_arc_tag" {
-  type        = string
-  description = "Confluence tag for ARC items"
-  default     = "arc_item"
-}
-
-variable "confluence_da_tag" {
-  type        = string
-  description = "Confluence tag for DA items"
-  default     = "da_item"
-}
-
-variable "confluence_initiative_tag" {
-  type        = string
-  description = "Confluence tag for initiative pages"
-  default     = "initiative"
 }
 
 variable "elastic_url" {
@@ -93,9 +87,15 @@ variable "architecture_report_elastic_datastream" {
   description = "ElasticSearch architecture-reporting datastream"
 }
 
-variable "elastic_api_key" {
+variable "initiative_reporting_elastic_api_key" {
   type        = string
-  description = "ElasticSearch API Key for API requests"
+  description = "ElasticSearch API Key for API requests for initiative-reporting"
+  sensitive   = true
+}
+
+variable "architecture_reporting_elastic_api_key" {
+  type        = string
+  description = "ElasticSearch API Key for API requests for architecture-reporting"
   sensitive   = true
 }
 

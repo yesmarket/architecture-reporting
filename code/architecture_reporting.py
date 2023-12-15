@@ -33,17 +33,15 @@ def lambda_handler(event, context):
     rollover_elastic_index()
 
     space_id = os.environ["CONFLUENCE_SPACE_ID"]
-    arc_tag = os.environ["CONFLUENCE_ARC_TAG"]
-    da_tag = os.environ["CONFLUENCE_DA_TAG"]
 
-    arc_ids = get_confluence_ids(space_id, arc_tag)
-    arc_props = get_props(space_id, arc_tag, arc_ids, "ARC")
+    arc_ids = get_confluence_ids(space_id, "arc_item")
+    arc_props = get_props(space_id, "arc_item", arc_ids, "ARC")
     arc_df = convert_to_dataframe(arc_props, ['category','title','Type','Date','Primary author','Status','Project sponsor / Org unit / Domain'])
     arc_df['Project sponsor / Org unit / Domain'] = arc_df['Project sponsor / Org unit / Domain'].str.replace('^\s*$', 'Undefined', regex=True)
     write_docs_to_elastic(arc_df, aggregate_id)
 
-    da_ids = get_confluence_ids(space_id, da_tag)
-    da_props = get_props(space_id, da_tag, da_ids, "DA")
+    da_ids = get_confluence_ids(space_id, "da_item")
+    da_props = get_props(space_id, "da_item", da_ids, "DA")
     da_df = convert_to_dataframe(da_props, ['category','title','Type','Date','Primary author','Status'])
     write_docs_to_elastic(da_df, aggregate_id)
 

@@ -1,27 +1,26 @@
-variable "common_tags" {
-    type    = map(string)
-    description = "Map of tags to be applied to all resources"
-    default - {}
+variable "function_name" {
+  type        = string
+  description = "Name of the lambda function"
 }
 
-variable "function_name" {
-    type = string
-    description = ""
+variable "function_path" {
+  type        = string
+  description = "Path to the function code file"
 }
 
 variable "iam_role_arn" {
-    type = string
-    description = "ARN of lambda function IAM role"
+  type        = string
+  description = "ARN of lambda function IAM role"
 }
 
 variable "kms_key_arn" {
-    type = string
-    description = "ARN of KMS key used by lambda function to decrypt encrypted environment variables"
+  type        = string
+  description = "ARN of KMS key used by lambda function to decrypt encrypted environment variables"
 }
 
 variable "lambda_layer_version_arn" {
-    type = string
-    description = "ARN of lambda layer version that contains the python dependencies required by the lambda function"
+  type        = string
+  description = "ARN of lambda layer version that contains the python dependencies required by the lambda function"
 }
 
 variable "runtime" {
@@ -87,4 +86,10 @@ variable "elastic_watcher_id" {
 variable "schedule_expression" {
   type        = string
   description = "CloudWatch schedule expression"
+}
+
+variable "common_tags" {
+  type        = map(string)
+  description = "Map of tags to be applied to all resources"
+  default     = {}
 }

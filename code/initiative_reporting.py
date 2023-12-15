@@ -32,10 +32,9 @@ def lambda_handler(event, context):
     rollover_elastic_index()
 
     space_id = os.environ["CONFLUENCE_SPACE_ID"]
-    tag = os.environ["CONFLUENCE_TAG"]
 
-    init_ids = get_confluence_ids(space_id, tag)
-    init_props = get_props(space_id, tag, init_ids)
+    init_ids = get_confluence_ids(space_id, "initiative")
+    init_props = get_props(space_id, "initiative", init_ids)
     init_df = convert_to_dataframe(init_props)
     write_docs_to_elastic(init_df)
     send_report_via_elastic_watcher()
