@@ -78,11 +78,6 @@ variable "elastic_api_key" {
   sensitive   = true
 }
 
-variable "elastic_watcher_id" {
-  type        = string
-  description = "ElasticSearch watcher ID for generating and dispatching the report via email"
-}
-
 variable "schedule_expression" {
   type        = string
   description = "CloudWatch schedule expression"

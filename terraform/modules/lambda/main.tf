@@ -24,7 +24,6 @@ resource "aws_lambda_function" "lambda_function" {
       ELASTIC_URL          = var.elastic_url
       ELASTIC_DATASTREAM   = var.elastic_datastream
       ELASTIC_API_KEY      = var.elastic_api_key
-      ELASTIC_WATCHER_ID   = var.elastic_watcher_id
     }
   }
 

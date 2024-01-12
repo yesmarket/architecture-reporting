@@ -37,7 +37,7 @@ def lambda_handler(event, context):
     init_props = get_props(space_id, "initiative", init_ids)
     init_df = convert_to_dataframe(init_props)
     write_docs_to_elastic(init_df)
-    send_report_via_elastic_watcher()
+    #send_report_via_elastic_watcher()
 
     return {
         'statusCode': 200,

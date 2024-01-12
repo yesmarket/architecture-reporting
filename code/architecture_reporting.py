@@ -45,7 +45,7 @@ def lambda_handler(event, context):
     da_df = convert_to_dataframe(da_props, ['category','title','Type','Date','Primary author','Status'])
     write_docs_to_elastic(da_df, aggregate_id)
 
-    send_report_via_elastic_watcher()
+    #send_report_via_elastic_watcher()
 
     return {
         'statusCode': 200,

@@ -14,3 +14,7 @@ initiative_report_elastic_watcher_id        = "74bddc42-20e7-48cc-be6a-64bda99aa
 architecture_report_elastic_watcher_id      = "13360196-6796-4287-9fee-e713c887339e"
 initiative_report_schedule_expression       = "cron(0 12 ? * 5 *)"
 architecture_report_schedule_expression     = "cron(0 11 ? * 5 *)"
+reverse_proxy_ansible_playbook_repository   = "https://github.com/yesmarket/ansible-playbook-nginx.git"
+ssh_public_key                              = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDVuBCuB9v9C/jiwTIzDH1wpPe8KlZRs9imkLj6enTTKDRYRx79dm/OlZwsfscy73faGhBS0gI3jWF6MeIRzIfcaTPfAlALqqxV7MrbVwHTHbiC6sA6h4OC//s0h3JMD27wjGvoNZUBmgxCiUz5/YEYuolL5RJa+XxWoq3Jn9s70O5+e3ypsEOQTefsaw+VI8gLI5s6UinAvMER+ffejMLpvBd1snnmccX1pzRHJyQ+tLZd8d0OZG1njQ9AMPse+5ZzYrlH+D5/VAtkn6YOYVYbXFxuKHnrazPvU8Hd+YZhHQTBMvqvUMzH1+vVTuWn3GA95k0Kap0ZtZk2+IhnYn6l User@DESKTOP-SKS35DF"
+domain                                      = "reporting.rbartsch.com"
+registered_email_for_domain                 = "rbartsch@yandex.com"
