@@ -150,7 +150,7 @@ variable "ssh_public_key" {
   description = "(Required) SSH public key for SSH access to nginx reverse proxy EC2 instancve"
 }
 
-variable "domain" {
+variable "reporting_dns_domain" {
   type        = string
   description = "(Required) DNS domain to use for the reverse proxy - need this for certificate registration/renewal with certbot"
 }
@@ -160,3 +160,14 @@ variable "registered_email_for_domain" {
   description = "(Required) Registered email address for the reverse proxy domain/sub-domain"
 }
 
+variable "naming_prefix" {
+  type        = string
+  description = "Naming prefix for all resources"
+  default     = "architecture-reporting"
+}
+
+variable "environment" {
+  type        = string
+  description = "Environment for the resources"
+  default     = "dev"
+}

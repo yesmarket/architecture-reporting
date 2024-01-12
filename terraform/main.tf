@@ -2,8 +2,8 @@
 # AWS lambda functions
 ##################################################################################
 
-resource "aws_iam_role" "lambda_iam_role" {
-  name               = "reporting-functions"
+resource "aws_iam_role" "this" {
+  name               = "${lower(local.naming_prefix)}-role"
   assume_role_policy = <<EOF
 {
     "Version": "2012-10-17",
@@ -23,8 +23,8 @@ EOF
   tags = local.common_tags
 }
 
-resource "aws_iam_policy" "lambda_cloudwatch_iam_policy" {
-  name        = "lambda_cloudwatch"
+resource "aws_iam_policy" "cloudwatch" {
+  name        = "${lower(local.naming_prefix)}-cloudwatch"
   path        = "/"
   description = "IAM policy for cloudwatch logging from a lambda"
 
@@ -49,25 +49,25 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_cloudwatch_iam_role_policy_attachment" {
-  role       = aws_iam_role.lambda_iam_role.name
-  policy_arn = aws_iam_policy.lambda_cloudwatch_iam_policy.arn
+  role       = aws_iam_role.this.name
+  policy_arn = aws_iam_policy.cloudwatch.arn
 }
 
-resource "aws_kms_key" "lambda_env_var_kms_key" {
+resource "aws_kms_key" "this" {
   description              = "lambda environment variable decryption"
   key_usage                = "ENCRYPT_DECRYPT"
   customer_master_key_spec = "SYMMETRIC_DEFAULT"
 
-  tags = local.common_tags
+  tags = merge(local.common_tags, { Name = "${local.naming_prefix}-key" })
 }
 
-resource "aws_kms_alias" "lambda_env_var_kms_key_alias" {
+resource "aws_kms_alias" "this" {
   name          = "alias/lambda-decryption-key"
-  target_key_id = aws_kms_key.lambda_env_var_kms_key.key_id
+  target_key_id = aws_kms_key.this.key_id
 }
 
-resource "aws_iam_policy" "lambda_kms_iam_policy" {
-  name        = "lambda_kms"
+resource "aws_iam_policy" "lambda" {
+  name        = "lambda"
   path        = "/"
   description = "IAM policy for decrypting lambda environment variables using a KMS key"
 
@@ -90,11 +90,11 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_kms_iam_role_policy_attachment" {
-  role       = aws_iam_role.lambda_iam_role.name
-  policy_arn = aws_iam_policy.lambda_kms_iam_policy.arn
+  role       = aws_iam_role.this.name
+  policy_arn = aws_iam_policy.lambda.arn
 }
 
-resource "aws_lambda_layer_version" "reporting_dependencies_lambda_layer_version" {
+resource "aws_lambda_layer_version" "reporting_dependencies" {
   filename                 = "${path.root}/../code/reporting_dependencies.zip"
   layer_name               = "reporting_dependencies"
   compatible_runtimes      = [var.python_runtime]
@@ -104,11 +104,12 @@ resource "aws_lambda_layer_version" "reporting_dependencies_lambda_layer_version
 module "initiative_reporting_lambda" {
   source = "./modules/lambda"
 
+  naming_prefix            = "${local.naming_prefix}-initiative_reporting"
   function_name            = "initiative_reporting"
   function_path            = "${path.root}/../code"
-  iam_role_arn             = aws_iam_role.lambda_iam_role.arn
-  kms_key_arn              = aws_kms_key.lambda_env_var_kms_key.arn
-  lambda_layer_version_arn = aws_lambda_layer_version.reporting_dependencies_lambda_layer_version.arn
+  iam_role_arn             = aws_iam_role.this.arn
+  kms_key_arn              = aws_kms_key.this.arn
+  lambda_layer_version_arn = aws_lambda_layer_version.reporting_dependencies.arn
   authorization_header     = var.initiative_reporting_authorization_header
   confluence_url           = var.confluence_url
   confluence_email         = var.confluence_email
@@ -125,11 +126,12 @@ module "initiative_reporting_lambda" {
 module "architecture_reporting_lambda" {
   source = "./modules/lambda"
 
+  naming_prefix            = "${local.naming_prefix}-architecture_reporting"
   function_name            = "architecture_reporting"
   function_path            = "${path.root}/../code"
-  iam_role_arn             = aws_iam_role.lambda_iam_role.arn
-  kms_key_arn              = aws_kms_key.lambda_env_var_kms_key.arn
-  lambda_layer_version_arn = aws_lambda_layer_version.reporting_dependencies_lambda_layer_version.arn
+  iam_role_arn             = aws_iam_role.this.arn
+  kms_key_arn              = aws_kms_key.this.arn
+  lambda_layer_version_arn = aws_lambda_layer_version.reporting_dependencies.arn
   authorization_header     = var.architecture_reporting_authorization_header
   confluence_url           = var.confluence_url
   confluence_email         = var.confluence_email
@@ -161,13 +163,13 @@ resource "aws_vpc" "this" {
   cidr_block           = var.vpc_cidr_block
   enable_dns_hostnames = var.enable_dns_hostnames
 
-  tags = local.common_tags
+  tags = merge(local.common_tags, { Name = "${local.naming_prefix}-vpc" })
 }
 
 resource "aws_internet_gateway" "this" {
   vpc_id = aws_vpc.this.id
 
-  tags = local.common_tags
+  tags = merge(local.common_tags, { Name = "${local.naming_prefix}-igw" })
 }
 
 resource "aws_subnet" "public" {
@@ -176,7 +178,7 @@ resource "aws_subnet" "public" {
   availability_zone       = data.aws_availability_zones.available.names[0]
   map_public_ip_on_launch = var.map_public_ip_on_launch
 
-  tags = local.common_tags
+  tags = merge(local.common_tags, { Name = "${local.naming_prefix}-public" })
 
   depends_on = [aws_internet_gateway.this]
 }
@@ -190,7 +192,7 @@ resource "aws_route_table" "this" {
     gateway_id = aws_internet_gateway.this.id
   }
 
-  tags = local.common_tags
+  tags = merge(local.common_tags, { Name = "${local.naming_prefix}-rt" })
 }
 
 resource "aws_route_table_association" "this" {
@@ -201,7 +203,7 @@ resource "aws_route_table_association" "this" {
 # SECURITY GROUPS #
 # Nginx security group 
 resource "aws_security_group" "reverse_proxy" {
-  name   = "reverse_proxy_sg"
+  name   = "${local.naming_prefix}-sg"
   vpc_id = aws_vpc.this.id
 
   # SSH access from anywhere
@@ -244,6 +246,8 @@ resource "aws_security_group" "reverse_proxy" {
 resource "aws_key_pair" "ssh" {
   key_name   = "ssh"
   public_key = var.ssh_public_key
+
+  tags = merge(local.common_tags, { Name = "${local.naming_prefix}-kp" })
 }
 
 resource "aws_instance" "reverse_proxy" {
@@ -256,20 +260,20 @@ resource "aws_instance" "reverse_proxy" {
 
   user_data_replace_on_change = true
   user_data = templatefile("${path.root}/templates/reverse_proxy_userdata.sh", {
-    playbook_repository = var.reverse_proxy_ansible_playbook_repository
-    kibana_credentials  = var.kibana_credentials
-    domain = var.reporting_dns_domain
+    playbook_repository         = var.reverse_proxy_ansible_playbook_repository
+    kibana_credentials          = var.kibana_credentials
+    domain                      = var.reporting_dns_domain
     registered_email_for_domain = var.registered_email_for_domain
   })
 
-  tags = local.common_tags
+  tags = merge(local.common_tags, { Name = "${local.naming_prefix}-reverse_proxy" })
 }
 
 resource "aws_eip" "this" {
   instance = aws_instance.reverse_proxy.id
   domain   = "vpc"
 
-  tags = local.common_tags
+  tags = merge(local.common_tags, { Name = "${local.naming_prefix}-eip" })
 
   depends_on = [aws_internet_gateway.this]
 }

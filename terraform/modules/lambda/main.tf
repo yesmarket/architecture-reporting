@@ -4,7 +4,7 @@ data "archive_file" "code" {
   output_path = "${path.module}/${var.function_name}.zip"
 }
 
-resource "aws_lambda_function" "lambda_function" {
+resource "aws_lambda_function" "this" {
   function_name    = var.function_name
   filename         = "${path.module}/${var.function_name}.zip"
   source_code_hash = data.archive_file.code.output_base64sha256
@@ -29,32 +29,32 @@ resource "aws_lambda_function" "lambda_function" {
 
   layers = [var.lambda_layer_version_arn, "arn:aws:lambda:ap-southeast-2:336392948345:layer:AWSSDKPandas-Python311:2"]
 
-  tags = var.common_tags
+  tags = merge(var.common_tags, { Name = "${var.naming_prefix}-fn" })
 }
 
 resource "aws_lambda_function_url" "lambda_function_url" {
-  function_name      = aws_lambda_function.lambda_function.function_name
+  function_name      = aws_lambda_function.this.function_name
   authorization_type = "NONE"
 }
 
-resource "aws_cloudwatch_event_rule" "cloudwatch_event_rule" {
-  name                = "${var.function_name}_cloudwatch_event_rule"
+resource "aws_cloudwatch_event_rule" "this" {
+  name                = "${var.naming_prefix}-rule"
   description         = "Schedule ${var.function_name} lambda function"
   schedule_expression = var.schedule_expression
 
   tags = var.common_tags
 }
 
-resource "aws_cloudwatch_event_target" "cloudwatch_event_target" {
+resource "aws_cloudwatch_event_target" "this" {
   target_id = "lambda-function-target"
-  rule      = aws_cloudwatch_event_rule.cloudwatch_event_rule.name
-  arn       = aws_lambda_function.lambda_function.arn
+  rule      = aws_cloudwatch_event_rule.this.name
+  arn       = aws_lambda_function.this.arn
 }
 
 resource "aws_lambda_permission" "allow_execution_from_cloudwatch" {
   statement_id  = "AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.lambda_function.function_name
+  function_name = aws_lambda_function.this.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.cloudwatch_event_rule.arn
+  source_arn    = aws_cloudwatch_event_rule.this.arn
 }

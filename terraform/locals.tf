@@ -1,7 +1,10 @@
 locals {
+
   common_tags = {
-    company = "hummgroup"
-    project = "architecture-reporting"
-    #billing_code = var.billing_code
+    company     = "hummgroup"
+    project     = "architecture-reporting"
+    environment = var.environment
   }
+
+  naming_prefix = "${var.naming_prefix}-${var.environment}"
 }
