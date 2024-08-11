@@ -4,6 +4,21 @@ data "archive_file" "code" {
   output_path = "${path.module}/${var.function_name}.zip"
 }
 
+#data "aws_kms_ciphertext" "authorization_header_ciphertext" {
+#  key_id = var.kms_key_id
+#  plaintext = var.authorization_header
+#}
+
+#data "aws_kms_ciphertext" "confluence_token_ciphertext" {
+#  key_id = var.kms_key_id
+#  plaintext = var.confluence_token
+#}
+
+#data "aws_kms_ciphertext" "elastic_api_key_ciphertext" {
+#  key_id = var.kms_key_id
+#  plaintext = var.elastic_api_key
+#}
+
 resource "aws_lambda_function" "this" {
   function_name    = var.function_name
   filename         = "${path.module}/${var.function_name}.zip"
@@ -16,13 +31,17 @@ resource "aws_lambda_function" "this" {
 
   environment {
     variables = {
+      ENVIRONMENT_VARIABLE_ENCRYPTION = var.environment_variable_encryption
+      #AUTHORIZATION_HEADER = data.aws_kms_ciphertext.authorization_header_ciphertext.ciphertext_blob
       AUTHORIZATION_HEADER = var.authorization_header
       CONFLUENCE_URL       = var.confluence_url
       CONFLUENCE_EMAIL     = var.confluence_email
+      #CONFLUENCE_TOKEN     = data.aws_kms_ciphertext.confluence_token_ciphertext.ciphertext_blob
       CONFLUENCE_TOKEN     = var.confluence_token
       CONFLUENCE_SPACE_ID  = var.confluence_space_id
       ELASTIC_URL          = var.elastic_url
       ELASTIC_DATASTREAM   = var.elastic_datastream
+      #ELASTIC_API_KEY      = data.aws_kms_ciphertext.elastic_api_key_ciphertext.ciphertext_blob
       ELASTIC_API_KEY      = var.elastic_api_key
     }
   }

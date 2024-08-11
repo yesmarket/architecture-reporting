@@ -1,1 +1,2 @@
 terraform/secrets.tfvars filter=git-crypt diff=git-crypt
+terraform/secrets.auto.tfvars filter=git-crypt diff=git-crypt

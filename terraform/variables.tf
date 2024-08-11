@@ -28,15 +28,15 @@ variable "lambda_timeout" {
   default     = 300
 }
 
-variable "initiative_reporting_authorization_header" {
+variable "environment_variable_encryption" {
   type        = string
-  description = "(Optional) Authorization header for initative-reporting lambda function"
-  sensitive   = true
+  description = "(Optional) Whether to encrypt sensitive environment variables in lambda"
+  default     = "True"
 }
 
-variable "architecture_reporting_authorization_header" {
+variable "authorization_header" {
   type        = string
-  description = "(Optional) Authorization header for architecture-reporting lambda function"
+  description = "(Optional) Authorization header for lambda function"
   sensitive   = true
 }
 
@@ -50,15 +50,9 @@ variable "confluence_email" {
   description = "(Required) Basic auth username for Confluence API requests"
 }
 
-variable "initiative_reporting_confluence_token" {
+variable "confluence_token" {
   type        = string
-  description = "(Optional) Basic auth password for Confluence API requests for initiative-reporting"
-  sensitive   = true
-}
-
-variable "architecture_reporting_confluence_token" {
-  type        = string
-  description = "(Optional) Basic auth password for Confluence API requests for architecture-reporting"
+  description = "(Optional) Basic auth password for Confluence API requests"
   sensitive   = true
 }
 
@@ -82,15 +76,9 @@ variable "architecture_report_elastic_datastream" {
   description = "(Required) ElasticSearch architecture-reporting datastream"
 }
 
-variable "initiative_reporting_elastic_api_key" {
+variable "elastic_api_key" {
   type        = string
-  description = "(Optional) ElasticSearch API Key for API requests for initiative-reporting"
-  sensitive   = true
-}
-
-variable "architecture_reporting_elastic_api_key" {
-  type        = string
-  description = "(Optional) ElasticSearch API Key for API requests for architecture-reporting"
+  description = "(Optional) ElasticSearch API Key for API requests"
   sensitive   = true
 }
 

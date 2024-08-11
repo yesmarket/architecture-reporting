@@ -104,21 +104,23 @@ resource "aws_lambda_layer_version" "reporting_dependencies" {
 module "initiative_reporting_lambda" {
   source = "./modules/lambda"
 
-  naming_prefix            = "${local.naming_prefix}-initiative_reporting"
-  function_name            = "initiative_reporting"
-  function_path            = "${path.root}/../code"
-  iam_role_arn             = aws_iam_role.this.arn
-  kms_key_arn              = aws_kms_key.this.arn
-  lambda_layer_version_arn = aws_lambda_layer_version.reporting_dependencies.arn
-  authorization_header     = var.initiative_reporting_authorization_header
-  confluence_url           = var.confluence_url
-  confluence_email         = var.confluence_email
-  confluence_token         = var.initiative_reporting_confluence_token
-  confluence_space_id      = var.confluence_space_id
-  elastic_url              = var.elastic_url
-  elastic_datastream       = var.initiative_report_elastic_datastream
-  elastic_api_key          = var.initiative_reporting_elastic_api_key
-  schedule_expression      = var.initiative_report_schedule_expression
+  naming_prefix                   = "${local.naming_prefix}-initiative_reporting"
+  function_name                   = "initiative_reporting"
+  function_path                   = "${path.root}/../code"
+  iam_role_arn                    = aws_iam_role.this.arn
+  kms_key_id                      = aws_kms_key.this.key_id
+  kms_key_arn                     = aws_kms_key.this.arn
+  lambda_layer_version_arn        = aws_lambda_layer_version.reporting_dependencies.arn
+  environment_variable_encryption = var.environment_variable_encryption
+  authorization_header            = var.authorization_header
+  confluence_url                  = var.confluence_url
+  confluence_email                = var.confluence_email
+  confluence_token                = var.confluence_token
+  confluence_space_id             = var.confluence_space_id
+  elastic_url                     = var.elastic_url
+  elastic_datastream              = var.initiative_report_elastic_datastream
+  elastic_api_key                 = var.elastic_api_key
+  schedule_expression             = var.initiative_report_schedule_expression
 
   common_tags = local.common_tags
 }
@@ -126,21 +128,23 @@ module "initiative_reporting_lambda" {
 module "architecture_reporting_lambda" {
   source = "./modules/lambda"
 
-  naming_prefix            = "${local.naming_prefix}-architecture_reporting"
-  function_name            = "architecture_reporting"
-  function_path            = "${path.root}/../code"
-  iam_role_arn             = aws_iam_role.this.arn
-  kms_key_arn              = aws_kms_key.this.arn
-  lambda_layer_version_arn = aws_lambda_layer_version.reporting_dependencies.arn
-  authorization_header     = var.architecture_reporting_authorization_header
-  confluence_url           = var.confluence_url
-  confluence_email         = var.confluence_email
-  confluence_token         = var.architecture_reporting_confluence_token
-  confluence_space_id      = var.confluence_space_id
-  elastic_url              = var.elastic_url
-  elastic_datastream       = var.architecture_report_elastic_datastream
-  elastic_api_key          = var.architecture_reporting_elastic_api_key
-  schedule_expression      = var.architecture_report_schedule_expression
+  naming_prefix                   = "${local.naming_prefix}-architecture_reporting"
+  function_name                   = "architecture_reporting"
+  function_path                   = "${path.root}/../code"
+  iam_role_arn                    = aws_iam_role.this.arn
+  kms_key_id                      = aws_kms_key.this.key_id
+  kms_key_arn                     = aws_kms_key.this.arn
+  lambda_layer_version_arn        = aws_lambda_layer_version.reporting_dependencies.arn
+  environment_variable_encryption = var.environment_variable_encryption
+  authorization_header            = var.authorization_header
+  confluence_url                  = var.confluence_url
+  confluence_email                = var.confluence_email
+  confluence_token                = var.confluence_token
+  confluence_space_id             = var.confluence_space_id
+  elastic_url                     = var.elastic_url
+  elastic_datastream              = var.architecture_report_elastic_datastream
+  elastic_api_key                 = var.elastic_api_key
+  schedule_expression             = var.architecture_report_schedule_expression
 
   common_tags = local.common_tags
 }

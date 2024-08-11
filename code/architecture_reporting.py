@@ -212,12 +212,18 @@ def send_report_via_elastic_watcher():
 
 def get_secret(name):
 
-    encrypted_secret = os.environ[name]
-    # Decrypt code should run once and variables stored outside of the function
-    # handler so that these are decrypted once per container
-    decrypted_secret = boto3.client('kms').decrypt(
-        CiphertextBlob=b64decode(encrypted_secret),
-        EncryptionContext={'LambdaFunctionName': os.environ['AWS_LAMBDA_FUNCTION_NAME']}
-    )['Plaintext'].decode('utf-8')
+    if os.environ["ENVIRONMENT_VARIABLE_ENCRYPTION"].lower() != "true":
 
-    return decrypted_secret
+        return os.environ[name]
+    
+    else:
+
+        encrypted_secret = os.environ[name]
+        # Decrypt code should run once and variables stored outside of the function
+        # handler so that these are decrypted once per container
+        decrypted_secret = boto3.client('kms').decrypt(
+            CiphertextBlob=b64decode(encrypted_secret),
+            EncryptionContext={'LambdaFunctionName': os.environ['AWS_LAMBDA_FUNCTION_NAME']}
+        )['Plaintext'].decode('utf-8')
+
+        return decrypted_secret

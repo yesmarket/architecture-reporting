@@ -136,15 +136,39 @@ def convert_to_dataframe(props):
     df = pd.DataFrame(props)
 
     df['Date Created'] = pd.to_datetime(df['Date Created'].str.strip(), errors='coerce')
+
     df['Planned BRD Start Date'] = pd.to_datetime(df['Planned BRD Start Date'].str.strip(), errors='coerce')
-    df['Planned BRD End Date (Gate 2)'] = pd.to_datetime(df['Planned BRD End Date (Gate 2)'].str.strip(), errors='coerce')
+    df['Planned BRD Completed Date'] = pd.to_datetime(df['Planned BRD Completed Date'].str.strip(), errors='coerce')
     df['Actual BRD Start Date'] = pd.to_datetime(df['Actual BRD Start Date'].str.strip(), errors='coerce')
-    df['Actual BRD End Date (Gate 2)'] = pd.to_datetime(df['Actual BRD End Date (Gate 2)'].str.strip(), errors='coerce')
-    df['Planned Solution Design Start Date (Gate 3)'] = pd.to_datetime(df['Planned Solution Design Start Date (Gate 3)'].str.strip(), errors='coerce')
-    df['Planned Solution Design End Date'] = pd.to_datetime(df['Planned Solution Design End Date'].str.strip(), errors='coerce')
+    df['Actual BRD Completed Date'] = pd.to_datetime(df['Actual BRD Completed Date'].str.strip(), errors='coerce')
+
+    df['BRD Signoff Date (Gate 2)'] = pd.to_datetime(df['BRD Signoff Date (Gate 2)'].str.strip(), errors='coerce')
+
+    df['Planned Solution Design Start Date'] = pd.to_datetime(df['Planned Solution Design Start Date'].str.strip(), errors='coerce')
+    df['Planned Solution Design Completed Date'] = pd.to_datetime(df['Planned Solution Design Completed Date'].str.strip(), errors='coerce')
     df['Actual Solution Design Start Date'] = pd.to_datetime(df['Actual Solution Design Start Date'].str.strip(), errors='coerce')
-    df['Actual Solution Design End Date (Gate 3)'] = pd.to_datetime(df['Actual Solution Design End Date (Gate 3)'].str.strip(), errors='coerce')
+    df['Actual Solution Design Completed Date'] = pd.to_datetime(df['Actual Solution Design Completed Date'].str.strip(), errors='coerce')
+
+    df['Solution Design Signoff Date (Gate 3)'] = pd.to_datetime(df['Solution Design Signoff Date (Gate 3)'].str.strip(), errors='coerce')
+
+    df['Planned Implementation Start Date'] = pd.to_datetime(df['Planned Implementation Start Date'].str.strip(), errors='coerce')
+    df['Planned Implementation Completion Date'] = pd.to_datetime(df['Planned Implementation Completion Date'].str.strip(), errors='coerce')
+    df['Actual Implementation Start Date'] = pd.to_datetime(df['Actual Implementation Start Date'].str.strip(), errors='coerce')
+    df['Actual Implementation Completion Date'] = pd.to_datetime(df['Actual Implementation Completion Date'].str.strip(), errors='coerce')
+
+    df['Planned Ready for Test Start Date'] = pd.to_datetime(df['Planned Ready for Test Start Date'].str.strip(), errors='coerce')
+    df['Planned Ready for Test Completed Date'] = pd.to_datetime(df['Planned Ready for Test Completed Date'].str.strip(), errors='coerce')
+    df['Actual Ready for Test Start Date'] = pd.to_datetime(df['Actual Ready for Test Start Date'].str.strip(), errors='coerce')
+    df['Actual Ready for Test Completed Date (Gate 4)'] = pd.to_datetime(df['Actual Ready for Test Completed Date (Gate 4)'].str.strip(), errors='coerce')
+
+    df['Planned CAB Signoff Date'] = pd.to_datetime(df['Planned CAB Signoff Date'].str.strip(), errors='coerce')
+    df['CAB Signoff Date (Gate 5)'] = pd.to_datetime(df['CAB Signoff Date (Gate 5)'].str.strip(), errors='coerce')
+
+    df['Planned Go Live Date'] = pd.to_datetime(df['Planned Go Live Date'].str.strip(), errors='coerce')
+    df['Actual Go Live Date'] = pd.to_datetime(df['Actual Go Live Date'].str.strip(), errors='coerce')
+
     df['Budget'] = df['Budget'].replace('[\$,]', '', regex=True)
+    df['Percentage Complete (for current status)'] = pd.to_numeric(df['Percentage Complete (for current status)'].replace('[\%,]', '', regex=True), errors='coerce')*0.01
 
     return df
 
@@ -165,71 +189,80 @@ def write_docs_to_elastic(df):
         executive_sponsors = [x.strip() for x in row['Executive Sponsor(s)'].split(',')]
         business_owners = [x.strip() for x in row['Business Owner(s)'].split(',')]
         delivery_managers = [x.strip() for x in row['Delivery Manager(s)'].split(',')]
-        products = [x.strip() for x in row['Product(s) Impacted'].split(',')]
+        delivery_squads = [x.strip() for x in row['Delivery Squad(s)'].split(',')]
+        business_analysts = [x.strip() for x in row['Business Analyst(s)'].split(',')]
+        solution_architects_tech_leads = [x.strip() for x in row['Solution Architect(s) / Tech Lead(s)'].split(',')]
+        level_of_design = [x.strip() for x in row['Level of Design'].split(',')]
+        products_impacted = [x.strip() for x in row['Product(s) Impacted'].split(',')]
         external_vendors = [x.strip() for x in row['External Vendor(s)'].split(',')]
+        external_vendors_engaged = True if row['External Vendor(s) Engaged'].lower() == 'yes' else False
         
         display_date = row['Date Created']
         if type(row['Actual BRD Start Date']) is not pd._libs.tslibs.nattype.NaTType and row['Actual BRD Start Date'].date() <= date.today():
             display_date = row['Actual BRD Start Date']
         elif type(row['Planned BRD Start Date']) is not pd._libs.tslibs.nattype.NaTType and row['Planned BRD Start Date'].date() <= date.today():
             display_date = row['Planned BRD Start Date']
-        
-        gate = 1
-        if row['Status'] == 'PENDING APPROVAL' or row['Status'] == 'BUSINESS REQUIREMENTS DEFINITION':
-            gate = 1
-        elif row['Status'] == 'BRD ENDORSED - GATE 2' or row['Status'] == 'SOLUTION DESIGN':
-            gate = 2
-        elif row['Status'] == 'SOL DESIGN ENDORSED - GATE 3' or row['Status'] == 'IN DEVELOPMENT':
-            gate = 3
-        elif row['Status'] == 'READY FOR TEST - GATE 4':
-            gate = 4
-        elif row['Status'] == 'CAB - GATE 5':
-            gate = 5
-        elif row['Status'] != 'LIVE' and row['Status'] != 'INITATIVE COMPLETE':
-            if ((type(row['Actual Solution Design End Date (Gate 3)']) is not pd._libs.tslibs.nattype.NaTType and row['Actual Solution Design End Date (Gate 3)'].date() >= date.today()) or (type(row['Planned Solution Design End Date']) is not pd._libs.tslibs.nattype.NaTType and row['Planned Solution Design End Date'].date()  >= date.today())):
-                gate = 3
-            elif ((type(row['Actual BRD Start Date']) is not pd._libs.tslibs.nattype.NaTType and row['Actual BRD Start Date'].date() >= date.today()) or (type(row['Planned BRD Start Date']) is not pd._libs.tslibs.nattype.NaTType and row['Planned BRD Start Date'].date() >= date.today())):
-                gate = 2
-        
-        num_days_offset = 0
-        if type(row['Planned Solution Design End Date']) is not pd._libs.tslibs.nattype.NaTType and type(row['Actual Solution Design End Date (Gate 3)']) is not pd._libs.tslibs.nattype.NaTType:
-            num_days_offset = (row['Planned Solution Design End Date'] - row['Actual Solution Design End Date (Gate 3)']).days
-        elif type(row['Planned Solution Design Start Date (Gate 3)']) is not pd._libs.tslibs.nattype.NaTType and type(row['Actual Solution Design Start Date']) is not pd._libs.tslibs.nattype.NaTType:
-            num_days_offset = (row['Planned Solution Design Start Date (Gate 3)'] - row['Actual Solution Design Start Date']).days
-        elif type(row['Planned BRD End Date (Gate 2)']) is not pd._libs.tslibs.nattype.NaTType and type(row['Actual BRD End Date (Gate 2)']) is not pd._libs.tslibs.nattype.NaTType:
-            num_days_offset = (row['Planned BRD End Date (Gate 2)'] - row['Actual BRD End Date (Gate 2)']).days
-        elif type(row['Planned BRD Start Date']) is not pd._libs.tslibs.nattype.NaTType and type(row['Actual BRD Start Date']) is not pd._libs.tslibs.nattype.NaTType:
-            num_days_offset = (row['Planned BRD Start Date'] - row['Actual BRD Start Date']).days
-        
+            
         doc={
             'name': row['title'],
             'executive_sponsors': executive_sponsors,
+            'executive_sponsors_str': row['Executive Sponsor(s)'],
             'business_owners': business_owners,
-            'delivery_manager': delivery_managers,
-            'products': products,
+            'business_owners_str': row['Business Owner(s)'],
+            'delivery_managers': delivery_managers,
+            'delivery_managers_str': row['Delivery Manager(s)'],
+            'delivery_squads': delivery_squads,
+            'delivery_squads_str': row['Delivery Squad(s)'],
+            'business_analysts': business_analysts,
+            'business_analysts_str': row['Business Analyst(s)'],
+            'solution_architects_tech_leads': solution_architects_tech_leads,
+            'solution_architects_tech_leads_str': row['Solution Architect(s) / Tech Lead(s)'],
+            'level_of_design': level_of_design,
+            'products_impacted': products_impacted,
+            'products_impacted_str': row['Product(s) Impacted'],
             'budget': row['Budget'],
             'delivery_approach': row['Delivery Approach'],
+            'date_created': getFormattedDate(row['Date Created']),
+            'link_to_brd': row['Link to BRD'],
+            'link_to_initiative_funding_paper': row['Link to Initiative Funding Paper'],
+            'link_to_jira_board': row['Link to Jira Board'],
+            'link_to_solution_design': row['Link to Solution Design'],
             'status': row['Status'],
-            'date_created': format_date(row['Date Created']),
-            'planned_brd_start_date': format_date(row['Planned BRD Start Date']),
-            'planned_brd_end_date': format_date(row['Planned BRD End Date (Gate 2)']),
-            'actual_brd_start_date': format_date(row['Actual BRD Start Date']),
-            'actual_brd_end_date': format_date(row['Actual BRD End Date (Gate 2)']),
-            'planned_solution_design_start_date': format_date(row['Planned Solution Design Start Date (Gate 3)']),
-            'planned_solution_design_end_date': format_date(row['Planned Solution Design End Date']),
-            'actual_solution_design_start_date': format_date(row['Actual Solution Design Start Date']),
-            'actual_solution_design_end_date': format_date(row['Actual Solution Design End Date (Gate 3)']),
+            'current_status_percent_complete': None if pd.isna(row['Percentage Complete (for current status)']) else row['Percentage Complete (for current status)'],
+            'planned_brd_start_date': getFormattedDate(row['Planned BRD Start Date']),
+            'planned_brd_end_date': getFormattedDate(row['Planned BRD Completed Date']),
+            'actual_brd_start_date': getFormattedDate(row['Actual BRD Start Date']),
+            'actual_brd_end_date': getFormattedDate(row['Actual BRD Completed Date']),
+            'brd_signoff_date': getFormattedDate(row['BRD Signoff Date (Gate 2)']),
+            'planned_solution_design_start_date': getFormattedDate(row['Planned Solution Design Start Date']),
+            'planned_solution_design_end_date': getFormattedDate(row['Planned Solution Design Completed Date']),
+            'actual_solution_design_start_date': getFormattedDate(row['Actual Solution Design Start Date']),
+            'actual_solution_design_end_date': getFormattedDate(row['Actual Solution Design Completed Date']),
+            'solution_design_signoff_date': getFormattedDate(row['Solution Design Signoff Date (Gate 3)']),
+            'planned_implementation_start_date': getFormattedDate(row['Planned Implementation Start Date']),
+            'planned_implementation_end_date': getFormattedDate(row['Planned Implementation Completion Date']),
+            'actual_implementation_start_date': getFormattedDate(row['Actual Implementation Start Date']),
+            'actual_implementation_end_date': getFormattedDate(row['Actual Implementation Completion Date']),
+            'planned_ready_for_test_start_date': getFormattedDate(row['Planned Ready for Test Start Date']),
+            'planned_ready_for_test_end_date': getFormattedDate(row['Actual Ready for Test Start Date']),
+            'actual_ready_for_test_start_date': getFormattedDate(row['Planned Ready for Test Completed Date']),
+            'actual_ready_for_test_end_date': getFormattedDate(row['Actual Ready for Test Completed Date (Gate 4)']),
+            'planned_cab_date': getFormattedDate(row['Planned CAB Signoff Date']),
+            'actual_cab_date': getFormattedDate(row['CAB Signoff Date (Gate 5)']),
+            'planned_go_live_date': getFormattedDate(row['Planned Go Live Date']),
+            'actual_go_live_date': getFormattedDate(row['Actual Go Live Date']),
             'external_vendors': external_vendors,
-            'gate': f'Gate #{gate}',
-            'display_date': display_date.strftime('%Y-%m-%d'),
-            'num_days_offset': num_days_offset
+            'external_vendors_engaged': external_vendors_engaged,
+            'statement_of_work_design_status': row['Statement of Work - Design'],
+            'statement_of_work_implementation_status': row['Statement of Work - Implementation'],
+            'display_date': display_date.strftime('%Y-%m-%d')
         }
-            
+
         loaded_doc = json.loads(json.dumps(doc))
         
         response=requests.post(elastic_url, json=loaded_doc, headers=headers)
 
-def format_date(col):
+def getFormattedDate(col):
 
     date_val = None
 
@@ -265,12 +298,18 @@ def send_report_via_elastic_watcher():
 
 def get_secret(name):
 
-    encrypted_secret = os.environ[name]
-    # Decrypt code should run once and variables stored outside of the function
-    # handler so that these are decrypted once per container
-    decrypted_secret = boto3.client('kms').decrypt(
-        CiphertextBlob=b64decode(encrypted_secret),
-        EncryptionContext={'LambdaFunctionName': os.environ['AWS_LAMBDA_FUNCTION_NAME']}
-    )['Plaintext'].decode('utf-8')
+    if os.environ["ENVIRONMENT_VARIABLE_ENCRYPTION"].lower() != "true":
 
-    return decrypted_secret
+        return os.environ[name]
+    
+    else:
+
+        encrypted_secret = os.environ[name]
+        # Decrypt code should run once and variables stored outside of the function
+        # handler so that these are decrypted once per container
+        decrypted_secret = boto3.client('kms').decrypt(
+            CiphertextBlob=b64decode(encrypted_secret),
+            EncryptionContext={'LambdaFunctionName': os.environ['AWS_LAMBDA_FUNCTION_NAME']}
+        )['Plaintext'].decode('utf-8')
+
+        return decrypted_secret

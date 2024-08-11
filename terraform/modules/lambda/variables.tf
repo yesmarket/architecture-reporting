@@ -13,6 +13,11 @@ variable "iam_role_arn" {
   description = "(Required) ARN of lambda function IAM role"
 }
 
+variable "kms_key_id" {
+  type        = string
+  description = "(Required) ID of KMS key used by lambda function to decrypt encrypted environment variables"
+}
+
 variable "kms_key_arn" {
   type        = string
   description = "(Required) ARN of KMS key used by lambda function to decrypt encrypted environment variables"
@@ -33,6 +38,12 @@ variable "timeout" {
   type        = number
   description = "(Optional) Lambda function timeout (in seconds)"
   default     = 300
+}
+
+variable "environment_variable_encryption" {
+  type        = string
+  description = "(Optional) Whether to encrypt sensitive environment variables in lambda"
+  default     = "True"
 }
 
 variable "authorization_header" {
